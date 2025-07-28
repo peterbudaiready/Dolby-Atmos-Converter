@@ -9,6 +9,10 @@ font = "sans serif"
 headless = true
 enableXsrfProtection = false
 
+[ui]
+hideTopBar = true
+hideSidebarNav = true
+
 [client]
 showSidebarNavigation = false
 
