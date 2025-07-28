@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import requests
 import os
@@ -75,16 +74,18 @@ if submitted:
             response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
             if response.ok:
                 st.success("Form submitted successfully to Dolby Atmos Webhook!")
+
+                # ✅ Redirect to Stripe payment link
+                st.markdown(
+                    """
+                    <meta http-equiv="refresh" content="0; url='https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00'" />
+                    <a href="https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00" target="_blank">Click here if you are not redirected</a>
+                    """,
+                    unsafe_allow_html=True
+                )
             else:
                 st.error(f"Webhook submission failed: {response.status_code}")
                 st.stop()
         except Exception as e:
             st.error(f"Webhook error: {e}")
             st.stop()
-
-    # Redirect to static Stripe payment link
-    st.markdown("""
-        <script>
-            window.location.href = "https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00";
-        </script>
-    """, unsafe_allow_html=True)
