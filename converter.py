@@ -4,11 +4,8 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Load API keys from .env or Streamlit secrets
+# Load Webhook URL from .env or Streamlit secrets
 load_dotenv()
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
-STRIPE_PRODUCT_ID = os.getenv("STRIPE_PRODUCT_ID")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
 st.set_page_config(page_title="Dolby Atmos Conversion", layout="centered")
@@ -80,24 +77,14 @@ if submitted:
                 st.success("Form submitted successfully to Dolby Atmos Webhook!")
             else:
                 st.error(f"Webhook submission failed: {response.status_code}")
+                st.stop()
         except Exception as e:
             st.error(f"Webhook error: {e}")
+            st.stop()
 
-    with st.spinner("Redirecting to payment..."):
-        checkout_payload = {
-            "payment_method_types[]": "card",
-            "line_items[0][price]": STRIPE_PRODUCT_ID,
-            "mode": "payment",
-            "success_url": "https://yourdomain.com/success",
-            "cancel_url": "https://yourdomain.com/cancel"
-        }
-        headers = {
-            "Authorization": f"Bearer {STRIPE_SECRET_KEY}"
-        }
-        try:
-            r = requests.post("https://api.stripe.com/v1/checkout/sessions", data=checkout_payload, headers=headers)
-            r.raise_for_status()
-            checkout_url = r.json().get("url")
-            st.markdown(f"[Click here to complete your payment]({checkout_url})")
-        except Exception as e:
-            st.error(f"Payment setup failed: {e}")
+    # Redirect to static Stripe payment link
+    st.markdown("""
+        <script>
+            window.location.href = "https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00";
+        </script>
+    """, unsafe_allow_html=True)
