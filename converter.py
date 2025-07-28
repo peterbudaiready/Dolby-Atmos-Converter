@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
+# Stripe Payment URL
+STRIPE_PAYMENT_LINK = "https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00"
+
+# Page Config and Styling
 st.set_page_config(page_title="Dolby Atmos Conversion", layout="centered")
 st.markdown("""
     <style>
@@ -32,8 +36,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Title
 st.title("Dolby Atmos Conversion")
 
+# Form UI
 with st.form("conversion_form", clear_on_submit=False):
     uploaded_files = st.file_uploader("Upload Audio Files (WAV or MP3):", type=["wav", "mp3"], accept_multiple_files=True)
     email = st.text_input("Your Email")
@@ -54,35 +60,34 @@ with st.form("conversion_form", clear_on_submit=False):
 
     submitted = st.form_submit_button("Convert")
 
+# Submission Logic
 if submitted:
     if not uploaded_files or not email:
         st.warning("Please fill all required fields.")
         st.stop()
 
     with st.spinner("Uploading and triggering conversion..."):
+        # Prepare file and data payload
         files_payload = [("audioFiles", (f.name, f, f.type)) for f in uploaded_files]
         data_payload = {
             "email": email,
-            "quality": str(quality),
+            "mix_wideness": str(quality),
+            "output_formats": ",".join(output_format),
+            "content_types": ",".join(content_type)
         }
-        for fmt in output_format:
-            data_payload.setdefault("outputFormat", []).append(fmt)
-        for ctype in content_type:
-            data_payload.setdefault("contentType", []).append(ctype)
 
         try:
             response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
             if response.ok:
                 st.success("Form submitted successfully to Dolby Atmos Webhook!")
 
-                # ✅ Redirect to Stripe payment link
-                st.markdown(
-                    """
-                    <meta http-equiv="refresh" content="0; url='https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00'" />
-                    <a href="https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00" target="_blank">Click here if you are not redirected</a>
-                    """,
-                    unsafe_allow_html=True
-                )
+                # ✅ Actual working JavaScript redirect
+                st.components.v1.html(f"""
+                    <script>
+                        window.location.href = "{STRIPE_PAYMENT_LINK}";
+                    </script>
+                    <p>Redirecting to payment... <a href="{STRIPE_PAYMENT_LINK}" target="_blank">Click here if not redirected.</a></p>
+                """, height=50)
             else:
                 st.error(f"Webhook submission failed: {response.status_code}")
                 st.stop()
