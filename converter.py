@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
+# Stripe Payment URL
+STRIPE_PAYMENT_LINK = "https://buy.stripe.com/28E9AM5UVg9Og5Oe3F18c00"
+
 # Page Config and Styling
 st.set_page_config(page_title="Dolby Atmos Conversion", layout="centered")
 st.markdown("""
@@ -76,24 +79,14 @@ if submitted:
         try:
             response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
             if response.ok:
-                try:
-                    json_response = response.json()
-                    redirect_url = json_response.get("payment_url") or json_response.get("url")
-                    if not redirect_url:
-                        st.error("Webhook did not return a payment link.")
-                        st.stop()
-                except Exception:
-                    st.error("Invalid response format from webhook.")
-                    st.stop()
+                st.success("Form submitted successfully to Dolby Atmos Webhook!")
 
-                st.success("Form submitted successfully. Redirecting to payment...")
-
-                # ✅ Actual working redirect via JS
+                # ✅ Actual working JavaScript redirect
                 st.components.v1.html(f"""
                     <script>
-                        window.location.href = "{redirect_url}";
+                        window.location.href = "{STRIPE_PAYMENT_LINK}";
                     </script>
-                    <p>Redirecting to payment... <a href="{redirect_url}" target="_blank">Click here if not redirected.</a></p>
+                    <p>Redirecting to payment... <a href="{STRIPE_PAYMENT_LINK}" target="_blank">Click here if not redirected.</a></p>
                 """, height=50)
             else:
                 st.error(f"Webhook submission failed: {response.status_code}")
