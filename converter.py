@@ -94,9 +94,9 @@ if not st.session_state.webhook_done:
                 st.error(f"Webhook error: {e}")
                 st.stop()
 else:
-    st.success("Conversion completed. Proceed to payment.")
+    st.success("Conversion completed. Your files are almost ready!")
 
-    if st.button("Go to Payment"):
+    if st.button("Get your files"):
         st.markdown(f"""
             <script>
                 window.location.href = "{STRIPE_PAYMENT_LINK}";
