@@ -86,7 +86,7 @@ if not st.session_state.webhook_done:
                 if response.ok:
                     st.success("Form submitted successfully to Dolby Atmos Webhook!")
                     st.session_state.webhook_done = True
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error(f"Webhook submission failed: {response.status_code}")
                     st.stop()
