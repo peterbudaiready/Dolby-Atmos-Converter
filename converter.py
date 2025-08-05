@@ -74,7 +74,7 @@ if not st.session_state.webhook_done:
             st.stop()
 
         with st.spinner("Uploading and triggering conversion..."):
-            # Send one webhook POST per file with delay to avoid 429
+            # Send one webhook POST per file with retry and delay to handle 429
             try:
                 for f in uploaded_files:
                     files_payload = {
@@ -87,13 +87,22 @@ if not st.session_state.webhook_done:
                         "content_types": ",".join(content_type)
                     }
 
-                    response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
 
-                    if not response.ok:
-                        st.error(f"Webhook submission failed for {f.name}: {response.status_code}")
+                        if response.status_code == 429:
+                            wait_time = (attempt + 1) * 5  # 5s, 10s, 15s backoff
+                            st.warning(f"Rate limited for {f.name}. Retrying in {wait_time} seconds...")
+                            time.sleep(wait_time)
+                        elif response.ok:
+                            break
+                        else:
+                            st.error(f"Webhook submission failed for {f.name}: {response.status_code}")
+                            st.stop()
+                    else:
+                        st.error(f"Webhook submission failed for {f.name} after multiple retries.")
                         st.stop()
-
-                    time.sleep(3.5)  # Delay to prevent 429 Too Many Requests
 
                 st.success("All files submitted successfully to Dolby Atmos Webhook!")
                 st.session_state.webhook_done = True
