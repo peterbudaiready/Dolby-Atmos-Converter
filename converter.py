@@ -47,6 +47,7 @@ if not st.session_state.webhook_done:
     # Form UI
     with st.form("conversion_form", clear_on_submit=False):
         uploaded_files = st.file_uploader("Upload Audio Files (WAV or MP3):", type=["wav", "mp3"], accept_multiple_files=True)
+        st.caption("Note: please upload at lest 3 (three) streo/mono instrument/stem files.")
         email = st.text_input("Your Email")
         st.caption("Note: please include your email where you want to receive your Dolby Atmos Files.")
 
@@ -101,5 +102,5 @@ else:
             <script>
                 window.location.href = "{STRIPE_PAYMENT_LINK}";
             </script>
-            <p>Redirecting to payment... <a href="{STRIPE_PAYMENT_LINK}" target="_blank">Click here if not redirected.</a></p>
+            <p>Redirecting ... <a href="{STRIPE_PAYMENT_LINK}" target="_blank">Click here if not redirected.</a></p>
         """, unsafe_allow_html=True)
