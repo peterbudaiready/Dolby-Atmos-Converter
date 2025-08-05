@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import os
+import time
 from dotenv import load_dotenv
 
 # Load Webhook URL from .env or Streamlit secrets
@@ -73,7 +74,7 @@ if not st.session_state.webhook_done:
             st.stop()
 
         with st.spinner("Uploading and triggering conversion..."):
-            # Send one webhook POST per file
+            # Send one webhook POST per file with delay to avoid 429
             try:
                 for f in uploaded_files:
                     files_payload = {
@@ -91,6 +92,8 @@ if not st.session_state.webhook_done:
                     if not response.ok:
                         st.error(f"Webhook submission failed for {f.name}: {response.status_code}")
                         st.stop()
+
+                    time.sleep(3.5)  # Delay to prevent 429 Too Many Requests
 
                 st.success("All files submitted successfully to Dolby Atmos Webhook!")
                 st.session_state.webhook_done = True
