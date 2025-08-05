@@ -67,8 +67,8 @@ if not st.session_state.webhook_done:
 
     # Submission Logic
     if submitted:
-        if not uploaded_files or not email:
-            st.warning("Please fill all required fields.")
+        if not uploaded_files or len(uploaded_files) < 3 or not email:
+            st.warning("Please upload at least 3 audio files and fill all required fields.")
             st.stop()
 
         with st.spinner("Uploading and triggering conversion..."):
