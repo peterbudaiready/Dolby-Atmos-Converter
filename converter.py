@@ -73,24 +73,28 @@ if not st.session_state.webhook_done:
             st.stop()
 
         with st.spinner("Uploading and triggering conversion..."):
-            # Prepare file and data payload
-            files_payload = [("audioFiles", (f.name, f, f.type)) for f in uploaded_files]
-            data_payload = {
-                "email": email,
-                "mix_wideness": str(quality),
-                "output_formats": ",".join(output_format),
-                "content_types": ",".join(content_type)
-            }
-
+            # Send one webhook POST per file
             try:
-                response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
-                if response.ok:
-                    st.success("Form submitted successfully to Dolby Atmos Webhook!")
-                    st.session_state.webhook_done = True
-                    st.rerun()
-                else:
-                    st.error(f"Webhook submission failed: {response.status_code}")
-                    st.stop()
+                for f in uploaded_files:
+                    files_payload = {
+                        "audioFiles": (f.name, f, f.type)
+                    }
+                    data_payload = {
+                        "email": email,
+                        "mix_wideness": str(quality),
+                        "output_formats": ",".join(output_format),
+                        "content_types": ",".join(content_type)
+                    }
+
+                    response = requests.post(WEBHOOK_URL, data=data_payload, files=files_payload)
+
+                    if not response.ok:
+                        st.error(f"Webhook submission failed for {f.name}: {response.status_code}")
+                        st.stop()
+
+                st.success("All files submitted successfully to Dolby Atmos Webhook!")
+                st.session_state.webhook_done = True
+                st.rerun()
             except Exception as e:
                 st.error(f"Webhook error: {e}")
                 st.stop()
